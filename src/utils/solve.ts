@@ -1,4 +1,5 @@
-import { dict } from '../assets/dict';
+import unidecode from 'unidecode';
+import dict from '../assets/dict.json';
 
 export function solve({
   letters,
@@ -7,14 +8,18 @@ export function solve({
   letters: string[];
   mainLetter: string;
 }) {
+  console.log(
+    `Buscant solució per a ${letters} entre ${dict.diccionari.length} paraules`
+  );
   const solution = [];
-  for (const word of dict) {
+  for (const word of dict.diccionari) {
+    const asciiWord = unidecode(word);
     if (
-      word.length >= 3 &&
-      word.includes(mainLetter) &&
-      word.split('').every((c) => letters.includes(c))
+      asciiWord.length >= 3 &&
+      asciiWord.includes(mainLetter) &&
+      asciiWord.split('').every((c) => letters.includes(c))
     ) {
-      solution.push(word);
+      solution.push(asciiWord);
     }
   }
   return solution;
