@@ -9,7 +9,7 @@ if (!solveButton) throw new Error('Could not create button element');
 solveButton.addEventListener('click', () => {
   const { letters, mainLetter } = getLetters();
   const solution = solve({ letters, mainLetter });
-  console.log('Solució', solution);
+  console.log('Solució', JSON.stringify(solution));
   submitSolution(solution);
 });
 
