@@ -41,6 +41,18 @@ function makeFemales(male: string, femaleSuffix: string) {
   return females;
 }
 
+function parseWord(word: string, removeTildes: boolean = false) {
+  const result = [];
+  const [male, femaleSuffix] = word.split('\t');
+  result.push(removeTildes ? unidecode(male) : male);
+  if (femaleSuffix) {
+    const females = makeFemales(male, femaleSuffix);
+    console.log(`  (${females})`);
+    result.push(...(removeTildes ? females.map(unidecode) : females));
+  }
+  return result;
+}
+
 /**
  * Extracts all words from the Catalan dictionary and saves them to a JSON file.
  *
@@ -61,21 +73,35 @@ async function buildDict(
    * ■\nu\n1\n\tnua\n
    * ■\nabecedari\n
    * ■\nabecedari\n2\n\t-ària\n
-   * ■\nabegot\n
    * ■\nabelià\t-ana\n
+   * ■\nnul\tnul·la\n
+   * ■\nmeu\n2\n\tmeva\t[o\tmeua]\n
    */
+  console.log(JSON.stringify(data.text));
   const matches = data.text.matchAll(
-    /■\n(?<word>[A-Za-zÀ-ÖØ-öø-ÿ·]*(\n\d\n)?(\t-?[A-Za-zÀ-ÖØ-öø-ÿ·]*)?)\n/g
+    /■\n(?<word>[A-Za-zÀ-ÖØ-öø-ÿ·]*(?:\n\d\n)?(?:\t-?[A-Za-zÀ-ÖØ-öø-ÿ·]*)?)(?<variants>\t\[(?:o\t-?[A-Za-zÀ-ÖØ-öø-ÿ·]*(?:\t-[A-Za-zÀ-ÖØ-öø-ÿ·]*)?\t*)*\])*\n/g
   );
   for (const match of matches) {
     const word = match.groups['word'].replace(/\n\d\n/, '');
-    console.log(word);
-    const [male, femaleSuffix] = word.split('\t');
-    words.push(removeTildes ? unidecode(male) : male);
-    if (femaleSuffix) {
-      const females = makeFemales(male, femaleSuffix);
-      console.log(`  (${females})`);
-      words.push(...(removeTildes ? females.map(unidecode) : females));
+    const variants = match.groups['variants'];
+    console.log('word', word);
+    console.log('variants', JSON.stringify(variants));
+    words.push(...parseWord(word, removeTildes));
+    if (variants) {
+      const matches = variants.matchAll(
+        /o\t(?<variant>-?[A-Za-zÀ-ÖØ-öø-ÿ·]*(?:\t-?[A-Za-zÀ-ÖØ-öø-ÿ·]*)?)(?:\t|\])?/g
+      );
+      for (const match of matches) {
+        const variant = match.groups['variant'];
+        if (variant.startsWith('-')) {
+          // If the variant starts with `-` it's just the female suffix, not the whole word
+          const male = word.split('\t')[0];
+          words.push(...parseWord(male + '\t' + variant));
+        } else {
+          // Otherwise it's the whole word, and it may or may not have a female suffix
+          words.push(...parseWord(variant));
+        }
+      }
     }
   }
   // Remove duplicates and sort dictionary
