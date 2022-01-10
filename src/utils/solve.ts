@@ -13,7 +13,7 @@ export function solve({
   );
   const solution = [];
   for (const word of dict.diccionari) {
-    const asciiWord = unidecode(word);
+    const asciiWord = unidecode(word).replace(/\*/g, ''); // The character `·` gets decoded to `*`
     if (
       asciiWord.length >= 3 &&
       asciiWord.includes(mainLetter) &&

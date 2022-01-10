@@ -65,7 +65,7 @@ async function buildDict(
    * ■\nabelià\t-ana\n
    */
   const matches = data.text.matchAll(
-    /■\n(?<word>[A-Za-zÀ-ÖØ-öø-ÿ]*(\n\d\n)?(\t-?[A-Za-zÀ-ÖØ-öø-ÿ]*)?)\n/g
+    /■\n(?<word>[A-Za-zÀ-ÖØ-öø-ÿ·]*(\n\d\n)?(\t-?[A-Za-zÀ-ÖØ-öø-ÿ·]*)?)\n/g
   );
   for (const match of matches) {
     const word = match.groups['word'].replace(/\n\d\n/, '');
